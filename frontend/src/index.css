@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@theme {
+  --color-surface: oklch(0.13 0.02 260);
+  --color-surface-raised: oklch(0.17 0.02 260);
+  --color-surface-overlay: oklch(0.21 0.025 260);
+  --color-surface-border: oklch(0.28 0.02 260);
+
+  --color-accent: oklch(0.72 0.19 155);
+  --color-accent-hover: oklch(0.78 0.17 155);
+  --color-accent-muted: oklch(0.72 0.19 155 / 0.15);
+
+  --color-danger: oklch(0.65 0.2 25);
+  --color-danger-muted: oklch(0.65 0.2 25 / 0.15);
+
+  --color-text-primary: oklch(0.95 0.01 260);
+  --color-text-secondary: oklch(0.65 0.02 260);
+  --color-text-tertiary: oklch(0.45 0.02 260);
+
+  --font-sans: 'Inter', 'system-ui', sans-serif;
+
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: var(--color-accent-muted);
+    color: var(--color-accent);
+  }
+}
+
+/* Grain texture overlay */
+.grain::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* Mesh gradient background */
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 80%, oklch(0.25 0.12 155 / 0.3), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 20%, oklch(0.22 0.1 280 / 0.25), transparent),
+    radial-gradient(ellipse 50% 60% at 50% 50%, oklch(0.18 0.06 200 / 0.2), transparent),
+    var(--color-surface);
+}
+
+/* Floating orb animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-12px) rotate(1deg); }
+  66% { transform: translateY(6px) rotate(-1deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; filter: blur(60px); }
+  50% { opacity: 0.7; filter: blur(80px); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.6s var(--ease-smooth) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s var(--ease-smooth) both;
+}
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }

@@ -1,0 +1,44 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: skywalker-auth
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/skywalker
+    driver-class-name: org.postgresql.Driver
+    username: uday
+    password: Uday@88717
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:***REMOVED***}
+            client-secret: ${GOOGLE_CLIENT_SECRET:***REMOVED***}
+            scope:
+              - email
+              - profile
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    access-token-expiration-ms: 900000
+    refresh-token-expiration-ms: 604800000
+  cors:
+    allowed-origins: http://localhost:5173,http://localhost:3000
+  webauthn:
+    rp-id: localhost
+    rp-name: Skywalker Auth
+    rp-origin: http://localhost:5173
