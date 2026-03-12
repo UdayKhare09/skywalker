@@ -37,6 +37,14 @@ public class CustomOidcUserService extends OidcUserService {
         if (!oAuth2AccountRepository.existsByProviderAndProviderAccountId(provider, providerAccountId)) {
             // Find or create user by email
             User user = userRepository.findByEmail(email)
+                    .map(existingUser -> {
+                        // Auto-verify email if an unverified user logs in with Google
+                        if (!existingUser.isEmailVerified()) {
+                            existingUser.setEmailVerified(true);
+                            return userRepository.save(existingUser);
+                        }
+                        return existingUser;
+                    })
                     .orElseGet(() -> {
                         log.info("Creating new user for OAuth2 email: {}", email);
                         return userRepository.save(
@@ -44,6 +52,7 @@ public class CustomOidcUserService extends OidcUserService {
                                         .email(email)
                                         .fullName(fullName)
                                         .role("ROLE_USER")
+                                        .isEmailVerified(true)
                                         .build()
                         );
                     });

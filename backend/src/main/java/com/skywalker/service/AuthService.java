@@ -6,6 +6,8 @@ import com.skywalker.entity.UserPassword;
 import com.skywalker.repository.OAuth2AccountRepository;
 import com.skywalker.repository.PasskeyCredentialRepository;
 import com.skywalker.repository.UserPasswordRepository;
+import com.skywalker.entity.EmailVerificationToken;
+import com.skywalker.repository.EmailVerificationTokenRepository;
 import com.skywalker.repository.UserRepository;
 import com.skywalker.security.CookieUtils;
 import com.skywalker.security.JwtService;
@@ -27,6 +29,8 @@ public class AuthService {
     private final UserPasswordRepository userPasswordRepository;
     private final OAuth2AccountRepository oAuth2AccountRepository;
     private final PasskeyCredentialRepository passkeyCredentialRepository;
+    private final EmailVerificationTokenRepository emailVerificationTokenRepository;
+    private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final CookieUtils cookieUtils;
@@ -51,10 +55,20 @@ public class AuthService {
                 .build();
         userPasswordRepository.save(userPassword);
 
-        log.info("User registered: {}", user.getEmail());
+        // Generate email verification token and send email
+        EmailVerificationToken verificationToken = EmailVerificationToken.builder()
+                .token(java.util.UUID.randomUUID().toString())
+                .user(user)
+                .expiryDate(java.time.Instant.now().plusSeconds(24 * 60 * 60)) // 24 hours
+                .build();
+        emailVerificationTokenRepository.save(verificationToken);
+
+        emailService.sendVerificationEmail(user.getEmail(), verificationToken.getToken());
+
+        log.info("User registered, pending verification: {}", user.getEmail());
 
         return AuthResponse.builder()
-                .message("Registration successful")
+                .message("Registration successful. Please check your email to verify your account.")
                 .user(toUserResponse(user))
                 .build();
     }
@@ -66,6 +80,10 @@ public class AuthService {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!user.isEmailVerified()) {
+            throw new RuntimeException("Email not verified. Please check your inbox.");
+        }
 
         String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getId());
         String refreshToken = jwtService.generateRefreshToken(user.getEmail(), user.getId());
@@ -109,6 +127,24 @@ public class AuthService {
                 .message("Token refreshed")
                 .user(toUserResponse(user))
                 .build();
+    }
+
+    @Transactional
+    public void verifyEmail(String tokenStr) {
+        EmailVerificationToken token = emailVerificationTokenRepository.findByToken(tokenStr)
+                .orElseThrow(() -> new RuntimeException("Invalid verification token"));
+
+        if (token.isExpired()) {
+            emailVerificationTokenRepository.delete(token);
+            throw new RuntimeException("Verification token has expired. Please register again.");
+        }
+
+        User user = token.getUser();
+        user.setEmailVerified(true);
+        userRepository.save(user);
+
+        emailVerificationTokenRepository.delete(token);
+        log.info("Email verified for user: {}", user.getEmail());
     }
 
     @Transactional(readOnly = true)

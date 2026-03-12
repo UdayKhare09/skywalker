@@ -77,7 +77,8 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const { register, login } = useAuth();
+  const [isSuccess, setIsSuccess] = useState(false);
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -88,9 +89,7 @@ export default function RegisterPage() {
 
     try {
       await register(fullName, email, password);
-      // Auto-login after registration
-      await login(email, password);
-      navigate('/dashboard');
+      setIsSuccess(true);
     } catch (err) {
       const data = err.response?.data;
       if (data?.fieldErrors) {
@@ -106,6 +105,33 @@ export default function RegisterPage() {
   const handleGoogleSignup = () => {
     window.location.href = '/oauth2/authorization/google';
   };
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-md bg-surface-raised rounded-2xl p-8 border border-surface-border text-center shadow-2xl animate-fade-in shadow-[0_0_40px_rgba(0,0,0,0.2)]">
+          <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-6 text-accent">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="20" height="16" x="2" y="4" rx="2" />
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight mb-3">Check your inbox</h2>
+          <p className="text-text-secondary mb-8 leading-relaxed">
+            We've sent a verification link to <span className="font-medium text-text-primary">{email}</span>. 
+            Please check your email to verify your account before logging in.
+          </p>
+          <button
+            onClick={() => navigate('/login')}
+            className="w-full h-11 rounded-xl bg-surface-overlay border border-surface-border font-medium text-sm
+                       hover:bg-surface-border active:scale-[0.98] transition-all cursor-pointer"
+          >
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">

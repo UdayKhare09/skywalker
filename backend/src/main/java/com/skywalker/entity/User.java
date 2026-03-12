@@ -30,6 +30,10 @@ public class User {
     @Builder.Default
     private String role = "ROLE_USER";
 
+    @Column(name = "is_email_verified", nullable = false)
+    @Builder.Default
+    private boolean isEmailVerified = false;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;

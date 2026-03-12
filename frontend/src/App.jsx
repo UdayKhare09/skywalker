@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -49,6 +50,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+            <Route path="/verify-email" element={<PublicRoute><VerifyEmailPage /></PublicRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>

@@ -45,6 +45,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if (!oAuth2AccountRepository.existsByProviderAndProviderAccountId(provider, providerAccountId)) {
             // Find or create user by email
             User user = userRepository.findByEmail(email)
+                    .map(existingUser -> {
+                        if (!existingUser.isEmailVerified()) {
+                            existingUser.setEmailVerified(true);
+                            return userRepository.save(existingUser);
+                        }
+                        return existingUser;
+                    })
                     .orElseGet(() -> {
                         log.info("Creating new user for OAuth2 email: {}", email);
                         return userRepository.save(
@@ -52,6 +59,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                                         .email(email)
                                         .fullName(fullName)
                                         .role("ROLE_USER")
+                                        .isEmailVerified(true)
                                         .build()
                         );
                     });
