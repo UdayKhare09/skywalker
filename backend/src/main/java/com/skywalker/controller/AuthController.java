@@ -69,4 +69,49 @@ public class AuthController {
         AuthResponse authResponse = authService.refresh(refreshToken, response);
         return ResponseEntity.ok(authResponse);
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<AuthResponse> forgotPassword(@RequestParam String email) {
+        authService.forgotPassword(email);
+        // Always return success to avoid email enumeration
+        return ResponseEntity.ok(
+                AuthResponse.builder()
+                        .message("If an account with that email exists, a password reset link has been sent.")
+                        .build()
+        );
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<AuthResponse> resetPassword(@RequestParam String token,
+                                                       @RequestParam String newPassword) {
+        if (newPassword == null || newPassword.length() < 8) {
+            return ResponseEntity.badRequest().body(
+                    AuthResponse.builder().message("Password must be at least 8 characters.").build()
+            );
+        }
+        authService.resetPassword(token, newPassword);
+        return ResponseEntity.ok(
+                AuthResponse.builder().message("Password reset successful. You can now log in.").build()
+        );
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<AuthResponse> changePassword(
+            @RequestBody ChangePasswordRequest request,
+            java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(
+                    AuthResponse.builder().message("Not authenticated").build()
+            );
+        }
+        if (request.getNewPassword() == null || request.getNewPassword().length() < 8) {
+            return ResponseEntity.badRequest().body(
+                    AuthResponse.builder().message("Password must be at least 8 characters.").build()
+            );
+        }
+        authService.changePassword(principal.getName(), request.getCurrentPassword(), request.getNewPassword());
+        return ResponseEntity.ok(
+                AuthResponse.builder().message("Password changed successfully.").build()
+        );
+    }
 }

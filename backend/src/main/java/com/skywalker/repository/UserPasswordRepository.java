@@ -15,4 +15,6 @@ public interface UserPasswordRepository extends JpaRepository<UserPassword, UUID
     Optional<UserPassword> findByUser_Email(String email);
 
     boolean existsByUser_Id(UUID userId);
+
+    Optional<UserPassword> findByUser(com.skywalker.entity.User user);
 }

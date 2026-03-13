@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import PasskeyManager from '../components/PasskeyManager';
+import api from '../api/axios';
 
 const ShieldIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -60,6 +62,215 @@ function AuthMethodCard({ icon, title, description, status, statusLabel }) {
       </div>
       <h3 className="text-sm font-semibold text-text-primary mb-1">{title}</h3>
       <p className="text-xs text-text-secondary leading-relaxed">{description}</p>
+    </div>
+  );
+}
+
+const EyeIcon = ({ open }) => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    {open ? (
+      <>
+        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </>
+    ) : (
+      <>
+        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+        <line x1="2" x2="22" y1="2" y2="22"/>
+      </>
+    )}
+  </svg>
+);
+
+function PasswordStrengthBar({ password }) {
+  if (!password) return null;
+  const checks = [
+    password.length >= 8,
+    /[A-Z]/.test(password),
+    /[0-9]/.test(password),
+  ];
+  const strength = checks.filter(Boolean).length;
+  const colors = ['bg-danger', 'bg-[oklch(0.75_0.15_85)]', 'bg-[oklch(0.75_0.15_85)]', 'bg-accent'];
+  const labels = ['', 'Weak', 'Fair', 'Strong'];
+  return (
+    <div className="mt-2">
+      <div className="flex gap-1 mb-1">
+        {[1,2,3].map(i => (
+          <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= strength ? colors[strength] : 'bg-surface-border'}`} />
+        ))}
+      </div>
+      {strength > 0 && (
+        <p className={`text-xs ${colors[strength].replace('bg-', 'text-')}`}>{labels[strength]}</p>
+      )}
+    </div>
+  );
+}
+
+function ChangePasswordSection({ hasPassword }) {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword]         = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrent, setShowCurrent]         = useState(false);
+  const [showNew, setShowNew]                 = useState(false);
+  const [showConfirm, setShowConfirm]         = useState(false);
+  const [isLoading, setIsLoading]             = useState(false);
+  const [error, setError]                     = useState('');
+  const [success, setSuccess]                 = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess(false);
+
+    if (newPassword !== confirmPassword) {
+      setError('New passwords do not match.');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError('New password must be at least 8 characters.');
+      return;
+    }
+    if (hasPassword && newPassword === currentPassword) {
+      setError('New password must be different from your current password.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await api.post('/api/auth/change-password', {
+        currentPassword: hasPassword ? currentPassword : null,
+        newPassword,
+      });
+      setSuccess(true);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to change password. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="animate-slide-up stagger-3 mt-8">
+      <h2 className="text-base font-semibold mb-1">{hasPassword ? 'Change password' : 'Set a password'}</h2>
+      <p className="text-sm text-text-secondary mb-5">
+        {hasPassword ? 'Update your password to keep your account secure.' : 'Add a password login method to your account.'}
+      </p>
+
+      <div className="p-6 rounded-2xl bg-surface-raised border border-surface-border">
+        {success && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-accent/10 border border-accent/25 text-sm text-accent animate-fade-in flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Password updated successfully!
+          </div>
+        )}
+        {error && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-danger-muted border border-danger/20 text-sm text-danger animate-fade-in">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4 max-w-sm">
+          {hasPassword && (
+            <div>
+              <label htmlFor="current-pass" className="block text-sm font-medium text-text-secondary mb-1.5">Current password</label>
+              <div className="relative">
+                <input
+                  id="current-pass"
+                  type={showCurrent ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  required
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full h-11 px-4 pr-11 rounded-xl bg-surface border border-surface-border text-sm text-text-primary
+                             placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50
+                             transition-all duration-200"
+                />
+                <button type="button" onClick={() => setShowCurrent(!showCurrent)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary transition-colors cursor-pointer">
+                  <EyeIcon open={showCurrent} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="new-pass" className="block text-sm font-medium text-text-secondary mb-1.5">New password</label>
+            <div className="relative">
+              <input
+                id="new-pass"
+                type={showNew ? 'text' : 'password'}
+                autoComplete="new-password"
+                required
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full h-11 px-4 pr-11 rounded-xl bg-surface border border-surface-border text-sm text-text-primary
+                           placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50
+                           transition-all duration-200"
+              />
+              <button type="button" onClick={() => setShowNew(!showNew)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary transition-colors cursor-pointer">
+                <EyeIcon open={showNew} />
+              </button>
+            </div>
+            <PasswordStrengthBar password={newPassword} />
+          </div>
+
+          <div>
+            <label htmlFor="confirm-pass" className="block text-sm font-medium text-text-secondary mb-1.5">Confirm new password</label>
+            <div className="relative">
+              <input
+                id="confirm-pass"
+                type={showConfirm ? 'text' : 'password'}
+                autoComplete="new-password"
+                required
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                className={`w-full h-11 px-4 pr-11 rounded-xl bg-surface border text-sm text-text-primary
+                           placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/50
+                           transition-all duration-200
+                           ${confirmPassword && newPassword !== confirmPassword ? 'border-danger' : 'border-surface-border'}`}
+              />
+              <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary transition-colors cursor-pointer">
+                <EyeIcon open={showConfirm} />
+              </button>
+            </div>
+            {confirmPassword && newPassword !== confirmPassword && (
+              <p className="mt-1 text-xs text-danger">Passwords do not match</p>
+            )}
+          </div>
+
+          <button
+            id="change-password-btn"
+            type="submit"
+            disabled={isLoading || !newPassword || !confirmPassword || (hasPassword && !currentPassword)}
+            className="w-full h-11 rounded-xl bg-accent text-surface font-semibold text-sm
+                       hover:bg-accent-hover active:scale-[0.98]
+                       disabled:opacity-40 disabled:cursor-not-allowed
+                       transition-all duration-200 cursor-pointer
+                       shadow-[0_0_20px_oklch(0.72_0.19_155_/_0.2)]"
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-surface border-t-transparent rounded-full animate-spin" />
+                Saving…
+              </div>
+            ) : (
+              hasPassword ? 'Change password' : 'Set password'
+            )}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
@@ -194,6 +405,9 @@ export default function DashboardPage() {
 
         {/* Passkey management */}
         <PasskeyManager onPasskeyChange={fetchUser} />
+
+        {/* Change/Set password */}
+        <ChangePasswordSection hasPassword={user?.hasPassword} />
 
         {/* Activity / info section */}
         <div className="animate-slide-up stagger-3 mt-10 p-6 rounded-2xl bg-surface-raised border border-surface-border">

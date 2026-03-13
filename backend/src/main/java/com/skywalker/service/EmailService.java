@@ -42,4 +42,28 @@ public class EmailService {
             throw new RuntimeException("Failed to send verification email. Please try again later.");
         }
     }
+
+    public void sendPasswordResetEmail(String toEmail, String token) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("Reset your Skywalker password");
+
+            String resetUrl = frontendUrl + "/reset-password?token=" + token;
+
+            message.setText("Hello,\n\n" +
+                    "We received a request to reset the password for your Skywalker account.\n\n" +
+                    "Click the link below to reset your password:\n\n" +
+                    resetUrl + "\n\n" +
+                    "This link will expire in 1 hour.\n\n" +
+                    "If you did not request a password reset, please ignore this email — your password will remain unchanged.");
+
+            mailSender.send(message);
+            log.info("Password reset email sent to: {}", toEmail);
+        } catch (Exception e) {
+            log.error("Failed to send password reset email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send password reset email. Please try again later.");
+        }
+    }
 }

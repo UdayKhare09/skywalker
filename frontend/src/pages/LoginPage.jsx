@@ -303,7 +303,12 @@ export default function LoginPage() {
             </div>
 
             <div className="animate-slide-up stagger-4">
-              <label htmlFor="password" className="block text-sm font-medium text-text-secondary mb-1.5">Password</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="password" className="block text-sm font-medium text-text-secondary">Password</label>
+                <Link to="/forgot-password" className="text-xs text-accent hover:text-accent-hover font-medium transition-colors">
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
                 <input
                   id="password"
