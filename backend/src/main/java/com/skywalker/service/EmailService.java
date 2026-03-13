@@ -66,4 +66,24 @@ public class EmailService {
             throw new RuntimeException("Failed to send password reset email. Please try again later.");
         }
     }
+
+    public void sendMfaOtpEmail(String toEmail, String otpCode) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("Your Skywalker login code: " + otpCode);
+
+            message.setText("Your one-time login code is:\n\n" +
+                    "  " + otpCode + "\n\n" +
+                    "This code expires in 10 minutes.\n\n" +
+                    "If you did not request this code, please ignore this email and secure your account.");
+
+            mailSender.send(message);
+            log.info("MFA OTP email sent to: {}", toEmail);
+        } catch (Exception e) {
+            log.error("Failed to send MFA OTP email to: {}", toEmail, e);
+            throw new RuntimeException("Failed to send login code. Please try again later.");
+        }
+    }
 }

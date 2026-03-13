@@ -44,7 +44,9 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
-                                "/api/webauthn/authenticate/**"
+                                "/api/webauthn/authenticate/**",
+                                "/api/mfa/send-email-otp",
+                                "/api/mfa/complete"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

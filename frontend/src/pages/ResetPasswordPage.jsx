@@ -1,30 +1,9 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
+import { Eye, EyeOff, Check, Layers, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
-const EyeIcon = ({ open }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    {open ? (
-      <>
-        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-        <circle cx="12" cy="12" r="3"/>
-      </>
-    ) : (
-      <>
-        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
-        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
-        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
-        <line x1="2" x2="22" y1="2" y2="22"/>
-      </>
-    )}
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-);
+const CheckIcon = () => <Check size={14} />;
 
 function PasswordStrength({ password }) {
   const checks = [
@@ -103,12 +82,8 @@ export default function ResetPasswordPage() {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="w-full max-w-md bg-surface-raised rounded-2xl p-8 border border-surface-border text-center shadow-2xl animate-fade-in">
-          <div className="w-16 h-16 bg-danger/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-danger">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="15" y1="9" x2="9" y2="15" />
-              <line x1="9" y1="9" x2="15" y2="15" />
-            </svg>
+          <div className="w-12 h-12 bg-danger/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <XCircle size={24} className="text-danger" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight mb-3">Invalid Reset Link</h2>
           <p className="text-text-secondary mb-8">This password reset link is missing or malformed.</p>
@@ -125,11 +100,8 @@ export default function ResetPasswordPage() {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="w-full max-w-md bg-surface-raised rounded-2xl p-8 border border-surface-border text-center shadow-2xl animate-fade-in shadow-[0_0_40px_rgba(0,0,0,0.2)]">
-          <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-              <polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
+          <div className="w-12 h-12 bg-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <CheckCircle size={24} className="text-accent" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight mb-3">Password Updated!</h2>
           <p className="text-text-secondary mb-8 leading-relaxed">
@@ -165,11 +137,7 @@ export default function ResetPasswordPage() {
         <div className="relative z-10 max-w-md animate-slide-up">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent">
-                <path d="M12 2L2 7l10 5 10-5-10-5Z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-              </svg>
+              <Layers size={20} className="text-accent" />
             </div>
             <span className="text-lg font-semibold tracking-tight">Skywalker</span>
           </div>
@@ -189,11 +157,7 @@ export default function ResetPasswordPage() {
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-10 animate-slide-up">
             <div className="w-9 h-9 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent">
-                <path d="M12 2L2 7l10 5 10-5-10-5Z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-              </svg>
+              <Layers size={16} className="text-accent" />
             </div>
             <span className="text-base font-semibold tracking-tight">Skywalker</span>
           </div>
@@ -204,8 +168,8 @@ export default function ResetPasswordPage() {
           </div>
 
           {error && (
-            <div className="animate-fade-in mb-4 px-4 py-3 rounded-xl bg-danger-muted border border-danger/20 text-sm text-danger">
-              {error}
+            <div className="animate-fade-in mb-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-danger-muted border border-danger/20 text-sm text-danger">
+              <AlertCircle size={14} className="shrink-0" />{error}
             </div>
           )}
 

@@ -33,6 +33,7 @@ public class AuthService {
     private final PasskeyCredentialRepository passkeyCredentialRepository;
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final MfaService mfaService;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -86,6 +87,16 @@ public class AuthService {
 
         if (!user.isEmailVerified()) {
             throw new RuntimeException("Email not verified. Please check your inbox.");
+        }
+
+        if (mfaService.isPasswordLoginDisabled(user)) {
+            throw new RuntimeException("Password login is disabled for this account. Use a passkey or MFA method.");
+        }
+
+        // Check if MFA is required
+        AuthResponse mfaChallenge = mfaService.buildMfaChallenge(user);
+        if (mfaChallenge != null) {
+            return mfaChallenge;
         }
 
         String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getId());

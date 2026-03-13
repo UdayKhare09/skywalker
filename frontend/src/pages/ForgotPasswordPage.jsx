@@ -1,20 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
+import { Mail, ArrowLeft, Layers, AlertCircle } from 'lucide-react';
 
-const MailIcon = () => (
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
-    <rect width="20" height="16" x="2" y="4" rx="2" />
-    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-  </svg>
-);
 
-const ArrowLeftIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m12 19-7-7 7-7" />
-    <path d="M19 12H5" />
-  </svg>
-);
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -41,8 +30,8 @@ export default function ForgotPasswordPage() {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="w-full max-w-md bg-surface-raised rounded-2xl p-8 border border-surface-border text-center shadow-2xl animate-fade-in shadow-[0_0_40px_rgba(0,0,0,0.2)]">
-          <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <MailIcon />
+      <div className="w-12 h-12 bg-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Mail size={24} className="text-accent" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight mb-3">Check your inbox</h2>
           <p className="text-text-secondary mb-8 leading-relaxed">
@@ -53,7 +42,7 @@ export default function ForgotPasswordPage() {
             to="/login"
             className="flex items-center justify-center gap-2 w-full h-11 rounded-xl bg-surface-overlay border border-surface-border font-medium text-sm hover:bg-surface-border active:scale-[0.98] transition-all"
           >
-            <ArrowLeftIcon />
+            <ArrowLeft size={15} />
             Back to sign in
           </Link>
         </div>
@@ -78,11 +67,7 @@ export default function ForgotPasswordPage() {
         <div className="relative z-10 max-w-md animate-slide-up">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent">
-                <path d="M12 2L2 7l10 5 10-5-10-5Z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-              </svg>
+              <Layers size={20} className="text-accent" />
             </div>
             <span className="text-lg font-semibold tracking-tight">Skywalker</span>
           </div>
@@ -102,11 +87,7 @@ export default function ForgotPasswordPage() {
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-10 animate-slide-up">
             <div className="w-9 h-9 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent">
-                <path d="M12 2L2 7l10 5 10-5-10-5Z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-              </svg>
+              <Layers size={16} className="text-accent" />
             </div>
             <span className="text-base font-semibold tracking-tight">Skywalker</span>
           </div>
@@ -119,7 +100,8 @@ export default function ForgotPasswordPage() {
           </div>
 
           {error && (
-            <div className="animate-fade-in mb-4 px-4 py-3 rounded-xl bg-danger-muted border border-danger/20 text-sm text-danger">
+            <div className="animate-fade-in mb-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-danger-muted border border-danger/20 text-sm text-danger">
+              <AlertCircle size={14} className="shrink-0" />
               {error}
             </div>
           )}

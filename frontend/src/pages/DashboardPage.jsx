@@ -1,36 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import PasskeyManager from '../components/PasskeyManager';
 import api from '../api/axios';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import {
+  Shield, Key, Link2, LogOut, Eye, EyeOff,
+  Layers, AlertCircle, CheckCircle, Mail, Smartphone,
+  ScanLine, ToggleLeft, ToggleRight, Copy, RefreshCw
+} from 'lucide-react';
 
-const ShieldIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
-  </svg>
-);
-
-const KeyIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1h1v-1h1a1 1 0 0 0 .707-.293l.586-.586A8 8 0 1 0 2.586 17.414Z"/>
-    <circle cx="16.5" cy="7.5" r="1.5"/>
-  </svg>
-);
-
-const LinkIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-  </svg>
-);
-
-const LogOutIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-    <polyline points="16 17 21 12 16 7"/>
-    <line x1="21" x2="9" y1="12" y2="12"/>
-  </svg>
-);
+gsap.registerPlugin(ScrollTrigger);
 
 function StatusBadge({ active, label }) {
   return (
@@ -66,31 +47,9 @@ function AuthMethodCard({ icon, title, description, status, statusLabel }) {
   );
 }
 
-const EyeIcon = ({ open }) => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    {open ? (
-      <>
-        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-        <circle cx="12" cy="12" r="3"/>
-      </>
-    ) : (
-      <>
-        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
-        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
-        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
-        <line x1="2" x2="22" y1="2" y2="22"/>
-      </>
-    )}
-  </svg>
-);
-
 function PasswordStrengthBar({ password }) {
   if (!password) return null;
-  const checks = [
-    password.length >= 8,
-    /[A-Z]/.test(password),
-    /[0-9]/.test(password),
-  ];
+  const checks = [password.length >= 8, /[A-Z]/.test(password), /[0-9]/.test(password)];
   const strength = checks.filter(Boolean).length;
   const colors = ['bg-danger', 'bg-[oklch(0.75_0.15_85)]', 'bg-[oklch(0.75_0.15_85)]', 'bg-accent'];
   const labels = ['', 'Weak', 'Fair', 'Strong'];
@@ -101,9 +60,274 @@ function PasswordStrengthBar({ password }) {
           <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= strength ? colors[strength] : 'bg-surface-border'}`} />
         ))}
       </div>
-      {strength > 0 && (
-        <p className={`text-xs ${colors[strength].replace('bg-', 'text-')}`}>{labels[strength]}</p>
-      )}
+      {strength > 0 && <p className={`text-xs ${colors[strength].replace('bg-','text-')}`}>{labels[strength]}</p>}
+    </div>
+  );
+}
+
+/* ── Toggle switch UI component ───────────────────────────────────────────── */
+function Toggle({ enabled, onToggle, disabled, loading }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      disabled={disabled || loading}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 cursor-pointer
+                  disabled:opacity-40 disabled:cursor-not-allowed
+                  ${enabled ? 'bg-accent' : 'bg-surface-border'}`}
+    >
+      <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-300
+                        ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+    </button>
+  );
+}
+
+/* ── MFA Settings Section ─────────────────────────────────────────────────── */
+function MfaSettingsSection() {
+  const [status, setStatus]         = useState(null);  // MfaStatusResponse
+  const [loading, setLoading]       = useState(true);
+  const [actionLoading, setActionLoading] = useState('');
+  const [error, setError]           = useState('');
+  const [success, setSuccess]       = useState('');
+
+  // TOTP setup flow
+  const [totpSetup, setTotpSetup]   = useState(null);  // { qrCodeBase64, secret }
+  const [totpCode, setTotpCode]     = useState('');
+  const [showSecret, setShowSecret] = useState(false);
+
+  const fetchStatus = async () => {
+    try {
+      const res = await api.get('/api/mfa/status');
+      setStatus(res.data);
+    } catch {/* ignore */}
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchStatus(); }, []);
+
+  const act = async (label, fn) => {
+    setActionLoading(label);
+    setError(''); setSuccess('');
+    try {
+      await fn();
+      await fetchStatus();
+      setSuccess({
+        'email-on':    'Email OTP enabled.',
+        'email-off':   'Email OTP disabled.',
+        'totp-setup':  'Scan the QR code with your authenticator app.',
+        'totp-confirm':'Authenticator app connected!',
+        'totp-off':    'TOTP disabled.',
+        'pwd-off':     'Password login disabled.',
+        'pwd-on':      'Password login re-enabled.',
+      }[label] || 'Done.');
+    } catch (e) {
+      setError(e.response?.data?.error || e.response?.data?.message || 'Action failed.');
+    } finally { setActionLoading(''); }
+  };
+
+  const toggleEmailOtp = () => act(
+    status?.emailOtpEnabled ? 'email-off' : 'email-on',
+    () => api.post(status?.emailOtpEnabled ? '/api/mfa/email-otp/disable' : '/api/mfa/email-otp/enable')
+  );
+
+  const startTotpSetup = () => act('totp-setup', async () => {
+    const res = await api.post('/api/mfa/totp/setup');
+    setTotpSetup(res.data);
+    setTotpCode('');
+  });
+
+  const confirmTotp = () => act('totp-confirm', async () => {
+    await api.post(`/api/mfa/totp/confirm?code=${totpCode}`);
+    setTotpSetup(null);
+    setTotpCode('');
+  });
+
+  const disableTotp = () => act('totp-off', () => api.post('/api/mfa/totp/disable'));
+
+  const togglePasswordLogin = () => act(
+    status?.passwordLoginDisabled ? 'pwd-on' : 'pwd-off',
+    () => api.post(status?.passwordLoginDisabled ? '/api/mfa/password-login/enable' : '/api/mfa/password-login/disable')
+  );
+
+  if (loading) {
+    return (
+      <div className="mt-8">
+        <div className="h-5 w-40 rounded shimmer mb-4" />
+        <div className="h-44 rounded-2xl shimmer" />
+      </div>
+    );
+  }
+
+  const isLoading = (key) => actionLoading === key;
+
+  return (
+    <div className="mt-8">
+      <h2 className="text-base font-semibold mb-1">Multi-factor authentication</h2>
+      <p className="text-sm text-text-secondary mb-5">Add extra verification steps to protect your account.</p>
+
+      <div className="rounded-2xl bg-surface-raised border border-surface-border overflow-hidden">
+        {/* Feedback banners */}
+        {(error || success) && (
+          <div className={`flex items-center gap-2 px-5 py-3 text-sm border-b
+            ${ error
+                ? 'bg-danger-muted border-danger/20 text-danger'
+                : 'bg-accent/10 border-accent/20 text-accent' }`}>
+            {error ? <AlertCircle size={14}/> : <CheckCircle size={14}/>}
+            {error || success}
+          </div>
+        )}
+
+        {/* ── Email OTP ─────────────────────────────────────────────────────── */}
+        <div className="flex items-center gap-4 px-5 py-4 border-b border-surface-border">
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+            ${status?.emailOtpEnabled ? 'bg-accent/10 text-accent' : 'bg-surface-overlay text-text-tertiary'}`}>
+            <Mail size={17}/>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">Email OTP</p>
+            <p className="text-xs text-text-secondary mt-0.5">Receive a 6-character code by email on every login</p>
+          </div>
+          {isLoading('email-on') || isLoading('email-off')
+            ? <RefreshCw size={16} className="animate-spin text-text-tertiary"/>
+            : <Toggle enabled={!!status?.emailOtpEnabled} onToggle={toggleEmailOtp}/>}
+        </div>
+
+        {/* ── TOTP ──────────────────────────────────────────────────────────── */}
+        <div className="px-5 py-4 border-b border-surface-border">
+          <div className="flex items-center gap-4">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+              ${status?.totpEnabled && status?.totpConfirmed ? 'bg-accent/10 text-accent' : 'bg-surface-overlay text-text-tertiary'}`}>
+              <Smartphone size={17}/>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">Authenticator app (TOTP)</p>
+              <p className="text-xs text-text-secondary mt-0.5">
+                {status?.totpEnabled && status?.totpConfirmed
+                  ? 'Connected — Google Authenticator / Authy / etc.'
+                  : 'Use any TOTP app like Google Authenticator or Authy'}
+              </p>
+            </div>
+            {isLoading('totp-setup') || isLoading('totp-off')
+              ? <RefreshCw size={16} className="animate-spin text-text-tertiary"/>
+              : status?.totpEnabled && status?.totpConfirmed
+                ? <button onClick={disableTotp}
+                    className="text-xs text-danger hover:underline cursor-pointer transition-colors">
+                    Remove
+                  </button>
+                : !totpSetup && (
+                    <button onClick={startTotpSetup}
+                      className="h-8 px-3 rounded-lg bg-accent/15 border border-accent/25 text-accent text-xs font-medium
+                                 hover:bg-accent/25 transition-colors cursor-pointer">
+                      Set up
+                    </button>
+                  )}
+          </div>
+
+          {/* QR Setup wizard */}
+          {totpSetup && (
+            <div className="mt-4 p-4 rounded-xl bg-surface border border-surface-border animate-scale-in">
+              <div className="flex items-start gap-4">
+                {/* QR Code */}
+                <div className="shrink-0">
+                  <img src={totpSetup.qrCodeBase64} alt="TOTP QR Code"
+                    className="w-36 h-36 rounded-lg bg-white p-1"/>
+                </div>
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <p className="text-xs font-medium text-text-secondary mb-1">1. Scan with your authenticator app</p>
+                    <p className="text-xs text-text-tertiary">Open Google Authenticator, Authy, or any TOTP app and scan the QR code.</p>
+                  </div>
+                  {/* Manual secret */}
+                  <div>
+                    <p className="text-xs font-medium text-text-secondary mb-1">Or enter the key manually:</p>
+                    <div className="flex items-center gap-2">
+                      <code className={`text-xs font-mono bg-surface-overlay px-2 py-1 rounded border border-surface-border tracking-wider
+                        ${showSecret ? '' : 'blur-sm select-none'}`}>
+                        {totpSetup.secret}
+                      </code>
+                      <button onClick={() => setShowSecret(s => !s)}
+                        className="text-text-tertiary hover:text-text-secondary cursor-pointer transition-colors">
+                        {showSecret ? <EyeOff size={13}/> : <Eye size={13}/>}
+                      </button>
+                      <button onClick={() => navigator.clipboard?.writeText(totpSetup.secret)}
+                        className="text-text-tertiary hover:text-accent cursor-pointer transition-colors">
+                        <Copy size={13}/>
+                      </button>
+                    </div>
+                  </div>
+                  {/* Verify code */}
+                  <div>
+                    <p className="text-xs font-medium text-text-secondary mb-1.5">2. Enter the 6-digit code to confirm</p>
+                    <div className="flex gap-2">
+                      <input
+                        id="totp-confirm-code"
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        autoFocus
+                        value={totpCode}
+                        onChange={e => setTotpCode(e.target.value.replace(/\D/g, ''))}
+                        placeholder="000000"
+                        className="w-28 h-9 px-3 rounded-lg bg-surface border border-surface-border text-sm font-mono
+                                   text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-accent/40
+                                   focus:border-accent/50 transition-all"
+                      />
+                      <button onClick={confirmTotp}
+                        disabled={totpCode.length < 6 || isLoading('totp-confirm')}
+                        className="h-9 px-4 rounded-lg bg-accent text-surface text-xs font-semibold
+                                   hover:bg-accent-hover active:scale-[0.97] disabled:opacity-40
+                                   disabled:cursor-not-allowed cursor-pointer transition-all">
+                        {isLoading('totp-confirm') ? <RefreshCw size={13} className="animate-spin"/> : 'Verify'}
+                      </button>
+                      <button onClick={() => setTotpSetup(null)}
+                        className="h-9 px-3 rounded-lg border border-surface-border text-xs text-text-secondary
+                                   hover:bg-surface-overlay cursor-pointer transition-colors">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Passkeys note ─────────────────────────────────────────────────── */}
+        <div className="flex items-center gap-4 px-5 py-4 border-b border-surface-border">
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+            bg-surface-overlay text-text-tertiary`}>
+            <ScanLine size={17}/>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium">Passkeys</p>
+            <p className="text-xs text-text-secondary mt-0.5">Managed above — passkeys are phishing-resistant and replace passwords</p>
+          </div>
+          <span className="text-xs text-text-tertiary italic">See Passkeys section</span>
+        </div>
+
+        {/* ── Disable password login ─────────────────────────────────────────── */}
+        <div className="flex items-center gap-4 px-5 py-4">
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+            ${status?.passwordLoginDisabled ? 'bg-danger/15 text-danger' : 'bg-surface-overlay text-text-tertiary'}`}>
+            <Key size={17}/>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium">Disable password login</p>
+            <p className="text-xs text-text-secondary mt-0.5">
+              {status?.passwordLoginDisabled
+                ? '⚠ Password login is disabled — you must use MFA or passkeys'
+                : 'Requires at least one MFA method to be active first'}
+            </p>
+          </div>
+          {isLoading('pwd-on') || isLoading('pwd-off')
+            ? <RefreshCw size={16} className="animate-spin text-text-tertiary"/>
+            : <Toggle
+                enabled={!!status?.passwordLoginDisabled}
+                onToggle={togglePasswordLogin}
+                disabled={!status?.emailOtpEnabled && !status?.totpEnabled && !status?.passwordLoginDisabled}
+              />}
+        </div>
+      </div>
     </div>
   );
 }
@@ -164,14 +388,13 @@ function ChangePasswordSection({ hasPassword }) {
       <div className="p-6 rounded-2xl bg-surface-raised border border-surface-border">
         {success && (
           <div className="mb-4 px-4 py-3 rounded-xl bg-accent/10 border border-accent/25 text-sm text-accent animate-fade-in flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
+            <CheckCircle size={16} className="shrink-0" />
             Password updated successfully!
           </div>
         )}
         {error && (
-          <div className="mb-4 px-4 py-3 rounded-xl bg-danger-muted border border-danger/20 text-sm text-danger animate-fade-in">
+          <div className="mb-4 px-4 py-3 rounded-xl bg-danger-muted border border-danger/20 text-sm text-danger animate-fade-in flex items-center gap-2">
+            <AlertCircle size={14} className="shrink-0" />
             {error}
           </div>
         )}
@@ -195,7 +418,7 @@ function ChangePasswordSection({ hasPassword }) {
                 />
                 <button type="button" onClick={() => setShowCurrent(!showCurrent)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary transition-colors cursor-pointer">
-                  <EyeIcon open={showCurrent} />
+                  {showCurrent ? <EyeOff size={16}/> : <Eye size={16}/>}
                 </button>
               </div>
             </div>
@@ -218,7 +441,7 @@ function ChangePasswordSection({ hasPassword }) {
               />
               <button type="button" onClick={() => setShowNew(!showNew)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary transition-colors cursor-pointer">
-                <EyeIcon open={showNew} />
+                {showNew ? <EyeOff size={16}/> : <Eye size={16}/>}
               </button>
             </div>
             <PasswordStrengthBar password={newPassword} />
@@ -242,7 +465,7 @@ function ChangePasswordSection({ hasPassword }) {
               />
               <button type="button" onClick={() => setShowConfirm(!showConfirm)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary transition-colors cursor-pointer">
-                <EyeIcon open={showConfirm} />
+                {showConfirm ? <EyeOff size={16}/> : <Eye size={16}/>}
               </button>
             </div>
             {confirmPassword && newPassword !== confirmPassword && (
@@ -278,11 +501,27 @@ function ChangePasswordSection({ hasPassword }) {
 export default function DashboardPage() {
   const { user, logout, fetchUser } = useAuth();
   const navigate = useNavigate();
+  const mainRef  = useRef(null);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Hero entrance
+      gsap.from('[data-gsap="hero"]', { opacity: 0, y: 30, duration: 0.7, ease: 'power3.out' });
+      // Stagger stats
+      gsap.from('[data-gsap="stat"]', { opacity: 0, y: 20, stagger: 0.1, duration: 0.55, ease: 'power3.out', delay: 0.2 });
+      // ScrollTrigger sections
+      gsap.utils.toArray('[data-gsap="section"]').forEach((el) => {
+        gsap.from(el, {
+          opacity: 0, y: 40,
+          duration: 0.65, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
+        });
+      });
+    }, mainRef);
+    return () => ctx.revert();
+  }, []);
+
+  const handleLogout = async () => { await logout(); navigate('/login'); };
 
   const initials = user?.fullName
     ?.split(' ')
@@ -296,31 +535,21 @@ export default function DashboardPage() {
     : '';
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" ref={mainRef}>
       {/* Top bar */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-surface/80 border-b border-surface-border">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent">
-                <path d="M12 2L2 7l10 5 10-5-10-5Z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-              </svg>
+              <Layers size={15} className="text-accent" />
             </div>
             <span className="text-sm font-semibold tracking-tight">Skywalker</span>
           </div>
-
-          <button
-            id="logout-btn"
-            onClick={handleLogout}
-            className="flex items-center gap-2 h-9 px-4 rounded-lg
-                       text-sm text-text-secondary
-                       hover:text-text-primary hover:bg-surface-raised
-                       active:scale-[0.97]
-                       transition-all duration-200 cursor-pointer"
-          >
-            <LogOutIcon />
+          <button id="logout-btn" onClick={handleLogout}
+            className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm text-text-secondary
+                       hover:text-text-primary hover:bg-surface-raised active:scale-[0.97]
+                       transition-all duration-200 cursor-pointer">
+            <LogOut size={15} />
             Sign out
           </button>
         </div>
@@ -328,7 +557,7 @@ export default function DashboardPage() {
 
       <main className="max-w-5xl mx-auto px-6 py-10">
         {/* Profile header */}
-        <div className="animate-slide-up flex items-center gap-5 mb-10">
+        <div data-gsap="hero" className="flex items-center gap-5 mb-10">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/30 to-[oklch(0.5_0.15_280)]/30
                           border border-surface-border flex items-center justify-center
                           text-xl font-bold text-text-primary">
@@ -344,7 +573,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats row */}
-        <div className="animate-slide-up stagger-1 grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
           {[
             {
               label: 'Security score',
@@ -365,7 +594,7 @@ export default function DashboardPage() {
               color: 'text-text-primary'
             }
           ].map((stat) => (
-            <div key={stat.label} className="p-4 rounded-2xl bg-surface-raised border border-surface-border">
+            <div data-gsap="stat" key={stat.label} className="p-4 rounded-2xl bg-surface-raised border border-surface-border">
               <p className="text-xs text-text-tertiary mb-1">{stat.label}</p>
               <p className={`text-lg font-semibold ${stat.color}`}>{stat.value}</p>
               <p className="text-xs text-text-secondary mt-0.5">{stat.sub}</p>
@@ -374,43 +603,39 @@ export default function DashboardPage() {
         </div>
 
         {/* Auth methods */}
-        <div className="animate-slide-up stagger-2">
+        <div data-gsap="section">
           <h2 className="text-base font-semibold mb-1">Authentication methods</h2>
           <p className="text-sm text-text-secondary mb-5">Manage how you sign in to your account</p>
-
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <AuthMethodCard
-              icon={<KeyIcon />}
-              title="Password"
-              description="Classic email and password authentication with BCrypt hashing."
-              status={user?.hasPassword}
-              statusLabel={user?.hasPassword ? 'Active' : 'Not set'}
-            />
-            <AuthMethodCard
-              icon={<LinkIcon />}
-              title="Google OAuth"
-              description="Sign in with your Google account. Linked automatically by email."
-              status={user?.hasOAuth2}
-              statusLabel={user?.hasOAuth2 ? 'Linked' : 'Not linked'}
-            />
-            <AuthMethodCard
-              icon={<ShieldIcon />}
-              title="Passkeys"
-              description="Passwordless authentication with biometrics via WebAuthn/FIDO2."
-              status={user?.hasPasskey}
-              statusLabel={user?.hasPasskey ? 'Registered' : 'Not set up'}
-            />
+            <AuthMethodCard icon={<Key size={18}/>} title="Password"
+              description="Classic email and password with BCrypt hashing."
+              status={user?.hasPassword} statusLabel={user?.hasPassword ? 'Active' : 'Not set'} />
+            <AuthMethodCard icon={<Link2 size={18}/>} title="Google OAuth"
+              description="Sign in with your Google account, linked by email."
+              status={user?.hasOAuth2} statusLabel={user?.hasOAuth2 ? 'Linked' : 'Not linked'} />
+            <AuthMethodCard icon={<Shield size={18}/>} title="Passkeys"
+              description="Passwordless biometric auth via WebAuthn/FIDO2."
+              status={user?.hasPasskey} statusLabel={user?.hasPasskey ? 'Registered' : 'Not set up'} />
           </div>
         </div>
 
         {/* Passkey management */}
-        <PasskeyManager onPasskeyChange={fetchUser} />
+        <div data-gsap="section">
+          <PasskeyManager onPasskeyChange={fetchUser} />
+        </div>
+
+        {/* MFA Settings */}
+        <div data-gsap="section">
+          <MfaSettingsSection />
+        </div>
 
         {/* Change/Set password */}
-        <ChangePasswordSection hasPassword={user?.hasPassword} />
+        <div data-gsap="section">
+          <ChangePasswordSection hasPassword={user?.hasPassword} />
+        </div>
 
-        {/* Activity / info section */}
-        <div className="animate-slide-up stagger-3 mt-10 p-6 rounded-2xl bg-surface-raised border border-surface-border">
+        {/* How it works */}
+        <div data-gsap="section" className="mt-10 p-6 rounded-2xl bg-surface-raised border border-surface-border">
           <h3 className="text-sm font-semibold mb-3">How it works</h3>
           <div className="space-y-3">
             {[
