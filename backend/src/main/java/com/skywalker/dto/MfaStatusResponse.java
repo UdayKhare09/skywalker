@@ -13,5 +13,4 @@ public class MfaStatusResponse {
     private boolean emailOtpEnabled;
     private boolean totpEnabled;
     private boolean totpConfirmed;
-    private boolean passwordLoginDisabled;
 }

@@ -64,7 +64,6 @@ public class GlobalExceptionHandler {
                 message.contains("does not belong") ||
                 message.contains("Invalid") ||
                 message.contains("No password") ||
-                message.contains("Password login is disabled") ||
                 message.contains("Email not verified"))) {
             log.warn("Business error: {}", message);
             Map<String, Object> body = Map.of(

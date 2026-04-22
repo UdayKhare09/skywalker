@@ -56,7 +56,6 @@ public class MfaService {
                 .emailOtpEnabled(settings.isEmailOtpEnabled())
                 .totpEnabled(settings.isTotpEnabled())
                 .totpConfirmed(totpSecret != null && totpSecret.isConfirmed())
-                .passwordLoginDisabled(settings.isPasswordLoginDisabled())
                 .build();
     }
 
@@ -67,25 +66,6 @@ public class MfaService {
         settings.setEmailOtpEnabled(enabled);
         mfaSettingsRepository.save(settings);
         log.info("Email OTP {} for user: {}", enabled ? "enabled" : "disabled", email);
-    }
-
-    @Transactional
-    public void setPasswordLoginDisabled(String email, boolean disabled) {
-        User user = getUser(email);
-        MfaSettings settings = getOrCreateSettings(user);
-
-        if (disabled) {
-            // Must have at least one MFA method active before disabling password login
-            boolean hasTotp = settings.isTotpEnabled();
-            boolean hasEmailOtp = settings.isEmailOtpEnabled();
-            if (!hasTotp && !hasEmailOtp) {
-                throw new RuntimeException("Enable at least one MFA method before disabling password login.");
-            }
-        }
-
-        settings.setPasswordLoginDisabled(disabled);
-        mfaSettingsRepository.save(settings);
-        log.info("Password login {} for user: {}", disabled ? "disabled" : "enabled", email);
     }
 
     // ─── TOTP Setup ─────────────────────────────────────────────────────────────
@@ -144,10 +124,6 @@ public class MfaService {
         totpSecretRepository.deleteByUser(user);
         MfaSettings settings = getOrCreateSettings(user);
         settings.setTotpEnabled(false);
-        // Don't disable password login if TOTP was the only MFA method
-        if (!settings.isEmailOtpEnabled()) {
-            settings.setPasswordLoginDisabled(false);
-        }
         mfaSettingsRepository.save(settings);
         log.info("TOTP disabled for user: {}", email);
     }
@@ -318,12 +294,6 @@ public class MfaService {
     public boolean isMfaEnabled(User user) {
         return mfaSettingsRepository.findByUser(user)
                 .map(s -> s.isEmailOtpEnabled() || s.isTotpEnabled())
-                .orElse(false);
-    }
-
-    public boolean isPasswordLoginDisabled(User user) {
-        return mfaSettingsRepository.findByUser(user)
-                .map(MfaSettings::isPasswordLoginDisabled)
                 .orElse(false);
     }
 }

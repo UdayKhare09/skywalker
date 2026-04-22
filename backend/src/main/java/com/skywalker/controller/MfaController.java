@@ -57,20 +57,6 @@ public class MfaController {
         return ResponseEntity.ok(AuthResponse.builder().message("TOTP disabled.").build());
     }
 
-    // ─── Password login ────────────────────────────────────────────────────────
-
-    @PostMapping("/password-login/disable")
-    public ResponseEntity<AuthResponse> disablePasswordLogin(Principal principal) {
-        mfaService.setPasswordLoginDisabled(principal.getName(), true);
-        return ResponseEntity.ok(AuthResponse.builder().message("Password login disabled.").build());
-    }
-
-    @PostMapping("/password-login/enable")
-    public ResponseEntity<AuthResponse> enablePasswordLogin(Principal principal) {
-        mfaService.setPasswordLoginDisabled(principal.getName(), false);
-        return ResponseEntity.ok(AuthResponse.builder().message("Password login enabled.").build());
-    }
-
     // ─── Login flow steps (public — called during MFA challenge) ───────────────
 
     @PostMapping("/send-email-otp")

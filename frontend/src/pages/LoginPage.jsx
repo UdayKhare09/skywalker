@@ -358,9 +358,13 @@ export default function LoginPage() {
 
             <button data-gsap="form-item" id="login-submit-btn" type="submit" disabled={isLoading}
               className="w-full h-11 rounded-xl bg-accent text-surface font-semibold text-sm
-                         hover:bg-accent-hover active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed
+                         hover:bg-accent-hover text-black hover:cursor-pointer">
+
+
+{/* active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed
                          transition-all duration-200 cursor-pointer
-                         shadow-[0_0_20px_oklch(0.72_0.19_155_/_0.25)] hover:shadow-[0_0_30px_oklch(0.72_0.19_155_/_0.35)]">
+                         shadow-[0_0_20px_oklch(0.72_0.19_155_/_0.25)] hover:shadow-[0_0_30px_oklch(0.72_0.19_155_/_0.35)] */}
+
               {isLoading
                 ? <span className="flex items-center justify-center gap-2"><div className="w-4 h-4 border-2 border-surface border-t-transparent rounded-full animate-spin" />Signing in…</span>
                 : <span className="flex items-center justify-center gap-2">Sign in <ArrowRight size={15} /></span>}

@@ -144,11 +144,6 @@ function MfaSettingsSection() {
 
   const disableTotp = () => act('totp-off', () => api.post('/api/mfa/totp/disable'));
 
-  const togglePasswordLogin = () => act(
-    status?.passwordLoginDisabled ? 'pwd-on' : 'pwd-off',
-    () => api.post(status?.passwordLoginDisabled ? '/api/mfa/password-login/enable' : '/api/mfa/password-login/disable')
-  );
-
   if (loading) {
     return (
       <div className="mt-8">
@@ -293,7 +288,7 @@ function MfaSettingsSection() {
         </div>
 
         {/* ── Passkeys note ─────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-4 px-5 py-4 border-b border-surface-border">
+        <div className="flex items-center gap-4 px-5 py-4">
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
             bg-surface-overlay text-text-tertiary`}>
             <ScanLine size={17}/>
@@ -303,29 +298,6 @@ function MfaSettingsSection() {
             <p className="text-xs text-text-secondary mt-0.5">Managed above — passkeys are phishing-resistant and replace passwords</p>
           </div>
           <span className="text-xs text-text-tertiary italic">See Passkeys section</span>
-        </div>
-
-        {/* ── Disable password login ─────────────────────────────────────────── */}
-        <div className="flex items-center gap-4 px-5 py-4">
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-            ${status?.passwordLoginDisabled ? 'bg-danger/15 text-danger' : 'bg-surface-overlay text-text-tertiary'}`}>
-            <Key size={17}/>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">Disable password login</p>
-            <p className="text-xs text-text-secondary mt-0.5">
-              {status?.passwordLoginDisabled
-                ? '⚠ Password login is disabled — you must use MFA or passkeys'
-                : 'Requires at least one MFA method to be active first'}
-            </p>
-          </div>
-          {isLoading('pwd-on') || isLoading('pwd-off')
-            ? <RefreshCw size={16} className="animate-spin text-text-tertiary"/>
-            : <Toggle
-                enabled={!!status?.passwordLoginDisabled}
-                onToggle={togglePasswordLogin}
-                disabled={!status?.emailOtpEnabled && !status?.totpEnabled && !status?.passwordLoginDisabled}
-              />}
         </div>
       </div>
     </div>

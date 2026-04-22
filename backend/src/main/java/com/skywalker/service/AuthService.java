@@ -89,10 +89,6 @@ public class AuthService {
             throw new RuntimeException("Email not verified. Please check your inbox.");
         }
 
-        if (mfaService.isPasswordLoginDisabled(user)) {
-            throw new RuntimeException("Password login is disabled for this account. Use a passkey or MFA method.");
-        }
-
         // Check if MFA is required
         AuthResponse mfaChallenge = mfaService.buildMfaChallenge(user);
         if (mfaChallenge != null) {

@@ -29,8 +29,4 @@ public class MfaSettings {
     @Builder.Default
     @Column(nullable = false)
     private boolean totpEnabled = false;
-
-    @Builder.Default
-    @Column(nullable = false)
-    private boolean passwordLoginDisabled = false;
 }
